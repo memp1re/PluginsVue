@@ -1,8 +1,7 @@
-// logger.js
 window.loggerPlugin = {
     install(app) {
         app.config.globalProperties.$log = (msg) => {
-            console.log(`[LOG]: ${msg}`)
-        }
+            console.log(`[LOG]: ${msg}`);
+        };
     }
-}
+};
