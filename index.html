@@ -5,8 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Vue Плагины</title>
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
-    
-    <!-- Подключаем плагины -->
     <script src="i18n.js"></script>
     <script src="logger.js"></script>
 </head>
@@ -17,9 +15,8 @@
         <button @click="setLanguage('english')">English</button>
         <button @click="setLanguage('french')">Français</button>
         
-        <!-- Компонент с inject -->
-        <div v-if="i18nData">
-            <p>Через inject: {{ i18nData.greetings.hello }}</p>
+        <div v-if="i18n">
+            <p>Через inject: {{ i18n.options.greetings.hello }}</p>
         </div>
     </div>
 
@@ -38,36 +35,31 @@
                     goodbye: 'Goodbye!'
                 }
             }
-        }
+        };
 
         const app = Vue.createApp({
             data() {
                 return {
-                    i18nData: null
-                }
+                    i18n: null
+                };
             },
             methods: {
                 setLanguage(lang) {
-                    // Обновляем плагин
-                    app.config.globalProperties.$translate = (key) => {
-                        return key.split('.').reduce((o, i) => o?.[i], translations[lang]) ?? '[перевод не найден]'
-                    }
-                    this.getTranslation()
-                },
-                getTranslation() {
-                    this.i18nData = Vue.inject('i18n')
+                    const i18n = Vue.inject('i18n');
+                    i18n.updateOptions(translations[lang]);
+                    this.i18n = i18n; // Обновляем реактивные данные
                 }
             },
             mounted() {
-                this.getTranslation()
+                this.i18n = Vue.inject('i18n');
             }
-        })
+        });
 
-        // Используем плагины с французским языком по умолчанию
-        app.use(i18nPlugin, translations.french)
-        app.use(loggerPlugin)
+        // Используем плагины
+        app.use(i18nPlugin, translations.french);
+        app.use(loggerPlugin);
 
-        app.mount('#app')
+        app.mount('#app');
     </script>
 </body>
 </html>
