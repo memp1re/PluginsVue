@@ -5,60 +5,66 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Vue Плагины</title>
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    
+    <!-- Подключаем плагины -->
+    <script src="i18n.js"></script>
+    <script src="logger.js"></script>
 </head>
 <body>
     <div id="app">
         <h1>{{ $translate('greetings.hello') }}</h1>
-        <button @click="$log('Тестовое сообщение')">Лог в консоль</button>
-        <button @click="setLanguage(english)">English</button>
-        <button @click="setLanguage(french)">Français</button>
+        <button @click="$log('Тест лога')">Лог в консоль</button>
+        <button @click="setLanguage('english')">English</button>
+        <button @click="setLanguage('french')">Français</button>
         
-        <!-- Шаг 5: Компонент с inject -->
-        <div id="component">
-            <p>Перевод через inject: {{ injectedTranslation }}</p>
+        <!-- Компонент с inject -->
+        <div v-if="i18nData">
+            <p>Через inject: {{ i18nData.greetings.hello }}</p>
         </div>
     </div>
 
-    <script type="module">
-        import i18nPlugin from './plugins/i18n.js'
-        import loggerPlugin from './plugins/logger.js'
-
-        const french = {
-            greetings: {
-                hello: 'Bonjour!',
-                goodbye: 'Au revoir!'
-            }
-        }
-
-        const english = {
-            greetings: {
-                hello: 'Hello!',
-                goodbye: 'Goodbye!'
+    <script>
+        // Данные переводов
+        const translations = {
+            french: {
+                greetings: {
+                    hello: 'Bonjour!',
+                    goodbye: 'Au revoir!'
+                }
+            },
+            english: {
+                greetings: {
+                    hello: 'Hello!',
+                    goodbye: 'Goodbye!'
+                }
             }
         }
 
         const app = Vue.createApp({
-            methods: {
-                setLanguage(langData) {
-                    app.config.globalProperties.$translate = (key) => {
-                        return key.split('.').reduce((o, i) => o?.[i], langData) ?? '[перевод не найден]'
-                    }
+            data() {
+                return {
+                    i18nData: null
                 }
+            },
+            methods: {
+                setLanguage(lang) {
+                    // Обновляем плагин
+                    app.config.globalProperties.$translate = (key) => {
+                        return key.split('.').reduce((o, i) => o?.[i], translations[lang]) ?? '[перевод не найден]'
+                    }
+                    this.getTranslation()
+                },
+                getTranslation() {
+                    this.i18nData = Vue.inject('i18n')
+                }
+            },
+            mounted() {
+                this.getTranslation()
             }
         })
 
-        // Шаг 5: Регистрация компонента
-        app.component('translation-display', {
-            setup() {
-                const i18n = Vue.inject('i18n')
-                return {
-                    injectedTranslation: i18n.greetings.hello
-                }
-            },
-            template: `<p>Перевод через inject: {{ injectedTranslation }}</p>`
-        })
-
-        app.use(i18nPlugin, french)
+        // Используем плагины с французским языком по умолчанию
+        app.use(i18nPlugin, translations.french)
         app.use(loggerPlugin)
 
         app.mount('#app')
