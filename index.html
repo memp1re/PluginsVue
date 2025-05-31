@@ -7,26 +7,35 @@
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
     <script src="i18n.js"></script>
     <script src="logger.js"></script>
+    <style>
+        button { margin: 0 5px; padding: 5px 10px; }
+        .language-buttons { margin: 20px 0; }
+    </style>
 </head>
 <body>
     <div id="app">
         <h1>{{ $translate('greetings.hello') }}</h1>
-        <button @click="$log('Тест лога')">Лог в консоль</button>
-        <button @click="setLanguage('english')">English</button>
-        <button @click="setLanguage('french')">Français</button>
         
-        <div v-if="i18n">
-            <p>Через inject: {{ i18n.options.greetings.hello }}</p>
+        <div class="language-buttons">
+            <button @click="setLanguage('russian')">Русский</button>
+            <button @click="setLanguage('english')">English</button>
+            <button @click="setLanguage('french')">Français</button>
+        </div>
+        
+        <button @click="$log('Тестовое сообщение')">Лог в консоль</button>
+        
+        <div v-if="i18nData" style="margin-top: 20px;">
+            <p>Через inject: {{ i18nData.greetings.hello }}</p>
         </div>
     </div>
 
     <script>
-        // Данные переводов
+        // Данные переводов с русским языком по умолчанию
         const translations = {
-            french: {
+            russian: {
                 greetings: {
-                    hello: 'Bonjour!',
-                    goodbye: 'Au revoir!'
+                    hello: 'Привет!',
+                    goodbye: 'До свидания!'
                 }
             },
             english: {
@@ -34,29 +43,36 @@
                     hello: 'Hello!',
                     goodbye: 'Goodbye!'
                 }
+            },
+            french: {
+                greetings: {
+                    hello: 'Bonjour!',
+                    goodbye: 'Au revoir!'
+                }
             }
         };
 
         const app = Vue.createApp({
             data() {
                 return {
-                    i18n: null
+                    i18nData: null
                 };
             },
             methods: {
                 setLanguage(lang) {
-                    const i18n = Vue.inject('i18n');
-                    i18n.updateOptions(translations[lang]);
-                    this.i18n = i18n; // Обновляем реактивные данные
+                    this.$updateTranslations(translations[lang]);
+                    this.i18nData = Vue.inject('i18n').translations;
                 }
             },
             mounted() {
-                this.i18n = Vue.inject('i18n');
+                // Устанавливаем русский язык по умолчанию
+                this.$updateTranslations(translations.russian);
+                this.i18nData = Vue.inject('i18n').translations;
             }
         });
 
-        // Используем плагины
-        app.use(i18nPlugin, translations.french);
+        // Используем плагины (передаем русский как дефолтный)
+        app.use(i18nPlugin, translations.russian);
         app.use(loggerPlugin);
 
         app.mount('#app');
