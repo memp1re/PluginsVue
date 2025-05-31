@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vue Плагины</title>
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+</head>
+<body>
+    <div id="app">
+        <h1>{{ $translate('greetings.hello') }}</h1>
+        <button @click="$log('Тестовое сообщение')">Лог в консоль</button>
+        <button @click="setLanguage(english)">English</button>
+        <button @click="setLanguage(french)">Français</button>
+        
+        <!-- Шаг 5: Компонент с inject -->
+        <div id="component">
+            <p>Перевод через inject: {{ injectedTranslation }}</p>
+        </div>
+    </div>
+
+    <script type="module">
+        import i18nPlugin from './plugins/i18n.js'
+        import loggerPlugin from './plugins/logger.js'
+
+        const french = {
+            greetings: {
+                hello: 'Bonjour!',
+                goodbye: 'Au revoir!'
+            }
+        }
+
+        const english = {
+            greetings: {
+                hello: 'Hello!',
+                goodbye: 'Goodbye!'
+            }
+        }
+
+        const app = Vue.createApp({
+            methods: {
+                setLanguage(langData) {
+                    app.config.globalProperties.$translate = (key) => {
+                        return key.split('.').reduce((o, i) => o?.[i], langData) ?? '[перевод не найден]'
+                    }
+                }
+            }
+        })
+
+        // Шаг 5: Регистрация компонента
+        app.component('translation-display', {
+            setup() {
+                const i18n = Vue.inject('i18n')
+                return {
+                    injectedTranslation: i18n.greetings.hello
+                }
+            },
+            template: `<p>Перевод через inject: {{ injectedTranslation }}</p>`
+        })
+
+        app.use(i18nPlugin, french)
+        app.use(loggerPlugin)
+
+        app.mount('#app')
+    </script>
+</body>
+</html>
