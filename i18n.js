@@ -1,22 +1,19 @@
 window.i18nPlugin = {
     install(app, options) {
-        // Сохраняем текущие настройки перевода
-        let currentOptions = options;
+        // Реактивное хранилище переводов
+        const state = Vue.reactive({ current: options });
         
         // Метод перевода
-        const translate = (key) => {
-            return key.split('.').reduce((o, i) => o?.[i], currentOptions) ?? '[перевод не найден]';
+        app.config.globalProperties.$translate = (key) => {
+            return key.split('.').reduce((o, i) => o?.[i], state.current) ?? '[Missing translation]';
         };
         
-        // Глобальный метод
-        app.config.globalProperties.$translate = translate;
+        // Метод обновления переводов
+        app.config.globalProperties.$updateTranslations = (newOptions) => {
+            state.current = newOptions;
+        };
         
         // Для inject
-        app.provide('i18n', { 
-            options: currentOptions,
-            updateOptions: (newOptions) => {
-                currentOptions = newOptions;
-            }
-        });
+        app.provide('i18n', Vue.readonly(state));
     }
 };
