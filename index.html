@@ -3,34 +3,32 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Vue Плагины</title>
+    <title>Многоязычное приложение Vue</title>
+    <link rel="stylesheet" href="styles.css">
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
     <script src="i18n.js"></script>
     <script src="logger.js"></script>
-    <style>
-        button { margin: 0 5px; padding: 5px 10px; }
-        .language-buttons { margin: 20px 0; }
-    </style>
 </head>
 <body>
     <div id="app">
-        <h1>{{ $translate('greetings.hello') }}</h1>
-        
-        <div class="language-buttons">
-            <button @click="setLanguage('russian')">Русский</button>
-            <button @click="setLanguage('english')">English</button>
-            <button @click="setLanguage('french')">Français</button>
-        </div>
-        
-        <button @click="$log('Тестовое сообщение')">Лог в консоль</button>
-        
-        <div v-if="i18nData" style="margin-top: 20px;">
-            <p>Через inject: {{ i18nData.greetings.hello }}</p>
+        <div class="app-container">
+            <h1>{{ $translate('greetings.hello') }}</h1>
+            
+            <div class="language-buttons">
+                <button @click="setLanguage('russian')">Русский</button>
+                <button @click="setLanguage('english')">English</button>
+                <button @click="setLanguage('french')">Français</button>
+            </div>
+            
+            <button class="log-button" @click="$log('Тестовое сообщение')">Логировать событие</button>
+            
+            <div class="translation-info" v-if="i18nData">
+                <p>Текущий перевод через inject: <strong>{{ i18nData.greetings.hello }}</strong></p>
+            </div>
         </div>
     </div>
 
     <script>
-        // Данные переводов с русским языком по умолчанию
         const translations = {
             russian: {
                 greetings: {
@@ -65,16 +63,13 @@
                 }
             },
             mounted() {
-                // Устанавливаем русский язык по умолчанию
                 this.$updateTranslations(translations.russian);
                 this.i18nData = Vue.inject('i18n').translations;
             }
         });
 
-        // Используем плагины (передаем русский как дефолтный)
         app.use(i18nPlugin, translations.russian);
         app.use(loggerPlugin);
-
         app.mount('#app');
     </script>
 </body>
